@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.0.2/dist/sweetalert2.min.css">  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <style>
+  #app{
+      background-color:#CFD8DC;      
+  };
+  </style>
+</head>
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>   
+       <h2 class="text-center">Listado de Usuarios Registrados</h2>
+       <!-- Botón CREAR -->                
+        <v-card class="mx-auto mt-5" color="transparent" max-width="1280" elevation="0">            
+        <v-btn class="mx-2" fab dark color="#E040FB" @click="formNuevo()"><v-icon dark>mdi-plus</v-icon></v-btn>           
+        <!-- Tabla y formulario -->
+        <v-simple-table class="mt-5">
+            <template v-slot:default>
+                <thead>
+                    <tr class="purple darken-2">
+                        <th class="white--text">#</th>
+                        <th class="white--text">NOMBRES</th>
+                        <th class="white--text">APELLIDOS</th>
+                        <th class="white--text">CEDULA</th>
+                        <th class="white--text">EMAIL</th>
+                        <th class="white--text">DIRECCION</th>
+                        <th class="white--text">PAIS</th>
+                        <th class="white--text">CELULAR</th>
+                        <th class="white--text">TIPO DE USUARIO</th>
+                        <th class="white--text text-center">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="user in users" :key="user.id">
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.names }}</td>
+                    <td>{{ user.lastNames }}</td>
+                    <td>{{ user.cedula }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.address }}</td>
+                    <td>{{ user.countryName}}</td>
+                    <td>{{ user.celular}}</td>
+                    <td>{{user.user_category.name}}</td>
+                    <td>
+                        <v-btn class="pink" dark small fab  @click="formEditar(user.id, user.names, user.lastNames, user.email, user.cedula, user.celular, user.countryName, user.address, user.idCategoryUser)"><v-icon>mdi-pencil</v-icon></v-btn>
+                        <v-btn class="error" fab dark small @click="borrar(user.id)"><v-icon>mdi-delete</v-icon></v-btn>
+                    </td>
+                    </tr>
+                </tbody>
+            </template>
+        </v-simple-table>
+        </v-card>        
+      <!-- Componente de Diálogo para CREAR y EDITAR -->
+      <v-dialog v-model="dialog" max-width="500">        
+        <v-card>
+          <v-card-title class="purple darken-4 white--text">User</v-card-title>    
+          <v-card-text>            
+            <v-form>             
+              <v-container>
+                <v-row>
+                  <input v-model="user.id" hidden></input>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="user.names" label="Nonbres" solo required>{{user.names}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="user.lastNames" label="Apellidos" solo required>{{user.lastNames}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="user.cedula" label="Cedula" type="number" solo required>{{user.cedula}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="user.email" label="Email" solo required>{{user.email}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="user.address" label="Dirección" solo required>{{user.address}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <v-text-field v-model="user.celular" label="Celular" type="number" solo required>{{user.celular}}</v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                      <label for="user.countryName">Pais</label>
+                      <br>
+                      <select v-model="user.countryName" class="form-control" id="pais.translations.spa.common">
+                        <option disabled value="">Seleccione un elemento</option>
+                        <option v-for="pais in paises" :value="pais.translations.spa.common">{{pais.translations.spa.common}}</option>
+                      </select>
+                  </v-col>
+                  <v-col cols="12" md="6">
+                    <label for="user.idCategoryUser">Categoria</label>
+                    <br>
+                    <select v-model="user.idCategoryUser" class="form-control" id="category.id">
+                      <option disabled value="">Seleccione un elemento</option>
+                      <option v-for="category in categories" :value="category.id">{{category.name}}</option>
+                    </select>
+                  </v-col>
+                </v-row>
+              </v-container>            
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn @click="dialog=false" color="blue-grey" dark>Cancelar</v-btn>
+            <v-btn @click="guardar()" type="submit" color="purple accent-3" dark>Guardar</v-btn>
+          </v-card-actions>
+          </v-form>
+        </v-card>
+      </v-dialog>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.20.0/axios.js" integrity="sha512-nqIFZC8560+CqHgXKez61MI0f9XSTKLkm0zFVm/99Wt0jSTZ7yeeYwbzyl0SGn/s8Mulbdw+ScCG41hmO2+FKw==" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.0.2/dist/sweetalert2.all.min.js"></script>
+
+  <script>
+    let url = 'http://localhost:8000/api/';
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+       data() {
+        return {            
+            users: [],
+            dialog: false,
+            operacion: '',            
+            user:{
+                id: null,
+                names:'',
+                lastNames:'',
+                cedula:'',
+                address:'',
+                email:'',
+                countryName:'',
+                celular:'',
+                idCategoryUser:'',
+            },
+            categories : [],
+            paises : []         
+        }
+       },
+       created(){               
+            this.mostrar()
+       },  
+       methods:{
+            //METODOS ADICIONALES
+            mostrarCategoriasUser:function(){
+              axios.get('http://localhost:8000/api/get-user-categories')
+              .then(response =>{
+                this.categories = response.data;                  
+              })
+            },
+            mostrarPaises:function(){
+              axios.get('https://restcountries.com/v3.1/subregion/South%20America')
+              .then(response =>{
+                this.paises = response.data;                 
+              })
+            },  
+            //MÉTODOS PARA EL CRUD
+            mostrar:function(){
+              axios.get('http://localhost:8000/api/get-users')
+              .then(response =>{
+                this.users = response.data;                  
+              })
+            },
+            crear:function(){
+                let parametros = {names:this.user.names, lastNames:this.user.lastNames,email:this.user.email,cedula:this.user.cedula,celular:this.user.celular,countryName:this.user.countryName,address:this.user.address,idCategoryUser:this.user.idCategoryUser};                
+                axios.post('http://localhost:8000/api/create-user', parametros)
+                .then(response =>{
+                  console.log();
+                  this.mostrar();
+                }).catch(response => {
+                      console.log(response);            
+                  });   
+              this.user.names = "";
+              this.user.lastNames = "";
+              this.user.email = "";
+              this.user.cedula = "";
+              this.user.celular = "";
+              this.user.countryName = "";
+              this.user.address = "";
+              this.user.idCategoryUser = "";
+            },                        
+            editar: function(){
+            let parametros = {names:this.user.names, lastNames:this.user.lastNames,email:this.user.email,cedula:this.user.cedula,celular:this.user.celular,countryName:this.user.countryName,address:this.user.address,idCategoryUser:this.user.idCategoryUser};                                               
+                 axios.put('http://localhost:8000/api/edit-user/'+this.user.id, parametros)                            
+                  .then(response => {                                
+                     this.mostrar();
+                  })                
+                  .catch(error => {
+                      console.log(error);            
+                  });
+            },
+            borrar:function(id){
+             Swal.fire({
+                title: '¿Confirma eliminar el registro?',   
+                confirmButtonText: `Confirmar`,                  
+                showCancelButton: true,                          
+              }).then((result) => {                
+                if (result.isConfirmed) {      
+                      //procedimiento borrar
+                      axios.delete('http://localhost:8000/api/delete-user/'+id)
+                      .then(response =>{           
+                          this.mostrar();
+                       });      
+                      Swal.fire('¡Eliminado!', '', 'success')
+                } else if (result.isDenied) {                  
+                }
+              });              
+            },
+
+            //Botones y formularios
+            guardar:function(){
+              if(this.operacion=='crear'){
+                this.crear();                
+              }
+              if(this.operacion=='editar'){ 
+                this.editar();                           
+              }
+              this.dialog=false;                        
+            }, 
+            formNuevo:function () {
+              this.dialog = true;
+              this.operacion = 'crear';
+              this.user.names = "";
+              this.user.lastNames = "";
+              this.user.email = "";
+              this.user.cedula = "";
+              this.user.celular = "";
+              this.user.countryName = "";
+              this.user.address = "";
+              this.user.idCategoryUser = "";
+              this.mostrarCategoriasUser();
+              this.mostrarPaises();
+            },
+            formEditar:function(id, names, lastNames, email, cedula, celular, countryName, address, idCategoryUser){              
+              this.user.id = id;
+              this.user.names = names;
+              this.user.lastNames = lastNames;
+              this.user.email = email;
+              this.user.cedula = cedula;
+              this.user.celular = celular;
+              this.user.countryName = countryName;
+              this.user.address = address;
+              this.user.idCategoryUser = idCategoryUser;                  
+              this.dialog=true;                            
+              this.operacion='editar';
+              this.mostrarCategoriasUser();
+              this.mostrarPaises();
+            }
+       }      
+    });
+  </script>
+</body>
+</html> 
